@@ -29,6 +29,7 @@ int visitBinOp(Node *node){
       return visit(node->op.left) / visit(node->op.right);
   }
 }
+
 int visit(Node *node){
   switch(node->class){
     case BINOP:
@@ -64,11 +65,15 @@ int main(int argc, char *argv[])
   current_char =  buffer[0];
   current_token = next_token();
   Node *head = expr();
-  // for(int i=BEGIN; i<ID+1; i++){
-  //   printf("%s\n", TYPE_STRING[i]);
-  // }
-  // printf("%d\n", );
   printf("%d\n", visit(head));
 
+  // To test lexer parsing
+  // while(1){
+  //   Token token = next_token();
+  //   if(token.type==SEMI){
+  //     return 0;
+  //   }
+  //   printf("%s\n", TYPE_STRINGS[token.type]);
+  // }
 	return 0;
 }

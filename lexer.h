@@ -34,7 +34,10 @@ static const char *TYPE_STRINGS[] = {
 };
 
 typedef struct Token {
-	int value;
+	union{
+		int value;
+		char* id;
+	};
   Type type;
 } Token;
 
@@ -43,7 +46,7 @@ int integer();
 void advance();
 char peek();
 int index_of(char* string, char* array[], int size);
-void _id();
+Token _id();
 
 
 #endif

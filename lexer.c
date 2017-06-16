@@ -6,7 +6,14 @@ char * buffer;
 
 
 Token next_token(){
-  if(isdigit(current_char)){
+  if(isspace(current_char) != 0){
+    advance();
+    return next_token();
+  }
+  else if(isalpha(current_char)!=0){
+    return _id();
+  }
+  else if(isdigit(current_char)){
     Token current;
     current.type = INT;
     current.value = integer();
@@ -43,17 +50,28 @@ Token next_token(){
     return current;
   }
   else if(current_char == ')'){
-
-
     advance();
     Token current;
     current.type = RPAREN;
     return current;
   }
-
-  Token current;
-  current.type = EOS;
-  return current;
+  else if(current_char == ':' && peek() == '='){
+    advance();
+    advance();
+    Token current;
+    current.type = ASSIGN;
+    return current;
+  }
+  else if(current_char == ';'){
+    Token current;
+    current.type = SEMI;
+    return current;
+  }
+  else if(current_char == '.'){
+    Token current;
+    current.type = DOT;
+    return current;
+  }
 
 }
 int integer(){
@@ -88,13 +106,21 @@ int index_of(char* string, char* array[], int size){
   }
   return -1;
 }
-void _id(){
+Token _id(){
   char result[10] = "";
   while(isalnum(current_char)!=0 && current_pos<length_of_input){
     strncat(result, &current_char, 1);
     advance();
   }
   Token toreturn;
-  toreturn.type = index_of(result, KEYWORD_STRINGS, sizeof(KEYWORD_STRINGS)/sizeof(KEYWORD_STRINGS[0]));
+  int index = index_of(result, KEYWORD_STRINGS, sizeof(KEYWORD_STRINGS)/sizeof(KEYWORD_STRINGS[0]));
+  if(index>-1){
+    toreturn.type = index;
+  }
+  else{
+    toreturn.type = ID;
+    toreturn.id = result;
+  }
   return toreturn;
+
 }
