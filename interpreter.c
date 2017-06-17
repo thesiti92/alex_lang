@@ -61,11 +61,12 @@ int main(int argc, char *argv[])
     printf("No File Found!\n");
     return 0;
   }
+
   length_of_input = length/sizeof(buffer[0]) - 2;
   current_char =  buffer[0];
   current_token = next_token();
-  Node *head = expr();
-  printf("%d\n", visit(head));
+  Node *head = program();
+  // printf("%d\n", visit(head));
 
   // To test lexer parsing
   // while(1){

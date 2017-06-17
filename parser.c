@@ -18,6 +18,7 @@ Node* BinOp(Token token, Node* left, Node* right){
   toReturn->op.right = right;
   return toReturn;
 }
+
 Node* UnOp(Token op, Node* expr){
   Node* toReturn = (Node*)malloc(sizeof(Node));
   toReturn->class = UNOP;
@@ -25,8 +26,35 @@ Node* UnOp(Token op, Node* expr){
   toReturn->expr = expr;
   return toReturn;
 }
-    
 
+Node* NoOp(){
+  Node* toReturn = (Node*)malloc(sizeof(Node));
+  toReturn->class = NOOP;
+  return toReturn;
+}
+
+Node* AssOp(Token token, Node* left, Node* right){
+  Node* toReturn = (Node*)malloc(sizeof(Node));
+  toReturn->class = ASSOP;
+  toReturn->token = token;
+  toReturn->op.left = left;
+  toReturn->op.right = right;
+  return toReturn;
+}
+
+Node* Var(Token token){
+  Node* toReturn = (Node*)malloc(sizeof(Node));
+  toReturn->class = VAR;
+  toReturn->token = token;
+  toReturn->id = token.id;
+}
+
+Node* Compound(Statement_Block children){
+  Node* root = (Node*) malloc(sizeof(Node));
+  memcpy(root->children.members, children.members, sizeof(children));
+  root->class = COMPOUND;
+  return root;
+}
 
 void consume(Type type){
   if(current_token.type == type){
@@ -38,7 +66,6 @@ void consume(Type type){
     exit(EXIT_SUCCESS);
   }
 }
-
 
 Node* factor(){
   Token current = current_token;
@@ -60,7 +87,9 @@ Node* factor(){
     consume(SUB);
     return UnOp(current, factor());
   }
-
+  else{
+    return variable();
+  }
 }
 
 Node* term(){
@@ -77,6 +106,7 @@ Node* term(){
 	}
 	return node;
 }
+
 Node* expr(){
 	Node *node = term();
 	while(current_token.type==MUL || current_token.type==DIV||current_token.type==ADD || current_token.type==SUB){
@@ -90,4 +120,60 @@ Node* expr(){
     node = BinOp(op, node, term());
 	}
 	return node;
+}
+
+Node* program(){
+  Node *node = compound_statement();
+  consume(DOT);
+  return node;
+}
+
+Node* compound_statement(){
+  consume(BEGIN);
+  Statement_Block nodes = statement_list();
+  Node* node = Compound(nodes);
+  consume(END);
+  return node;
+}
+
+Statement_Block statement_list(){
+  Statement_Block statements;
+  statements.size = 1;
+  statements.members[0] = statement();
+  while(current_token.type == SEMI){
+    consume(SEMI);
+    statements.members[statements.size] = statement();
+    statements.size++;
+  }
+  if(current_token.type == ID){
+    printf("Syntax Error in parsing statement_list\n");
+  }
+
+  return statements;
+}
+
+Node* statement(){
+  if(current_token.type == BEGIN){
+    return compound_statement();
+  }
+  else if(current_token.type == ASSIGN){
+    return assignment_statement();
+  }
+  else{
+    return NoOp();
+  }
+}
+
+Node* assignment_statement(){
+  Node* left = variable();
+  Token assign = current_token;
+  consume(ASSIGN);
+  Node* right = expr();
+  return AssOp(assign, left, right);
+}
+
+Node* variable(){
+  Node *node = Var(current_token);
+  consume(ID);
+  return node;
 }
