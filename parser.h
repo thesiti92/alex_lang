@@ -5,10 +5,10 @@ static const char *KEYWORD_STRINGS[] = {
     FOREACH_KEYWORD(GENERATE_STRING)
 };
 
-typedef struct Statement_Block{
-  int size;
-  struct Node* members[];
-} Statement_Block;
+// typedef struct Statement_Block{
+//   int size;
+//   struct Node* members[1];
+// } Statement_Block;
 
 typedef enum Class{
 	CONSTANT, BINOP, UNOP, COMPOUND, ASSOP, VAR, NOOP
@@ -24,7 +24,7 @@ typedef struct Node {
 			struct Node* right;
 		} op;
 		struct Node* expr;
-    Statement_Block children;
+    struct Node* children[1];
 	};
 } Node;
 
@@ -41,7 +41,7 @@ Node* AssOp(Token token, Node* left, Node* right);
 Node* Var(Token token);
 Node* program();
 Node* compound_statement();
-Statement_Block statement_list();
+Node* statement_list();
 Node* statement();
 Node* assignment_statement();
 Node* variable();

@@ -4,7 +4,6 @@ char current_char;
 long length_of_input;
 char * buffer;
 
-
 Token next_token(){
   if(isspace(current_char) != 0){
     advance();
@@ -63,11 +62,13 @@ Token next_token(){
     return current;
   }
   else if(current_char == ';'){
+    advance();
     Token current;
     current.type = SEMI;
     return current;
   }
   else if(current_char == '.'){
+    advance();
     Token current;
     current.type = DOT;
     return current;
@@ -86,7 +87,7 @@ void advance(){
   current_pos++;
   if(current_pos>length_of_input){
     printf("End of Sequence\n");
-    return;
+    exit(0);
   }
 
   current_char = buffer[current_pos];

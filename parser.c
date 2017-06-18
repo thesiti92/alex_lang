@@ -1,9 +1,12 @@
 #include "interpreter.h"
 Token current_token;
 extern const char * TYPE_STRINGS[];
+Node* toReturn;
+Node* statements;
 
 Node* Num(Token token){
-  Node* toReturn = (Node*)malloc(sizeof(Node));
+  free(toReturn);
+  toReturn = malloc(sizeof(Node));
   toReturn->class = CONSTANT;
   toReturn->token = token;
   toReturn->value = token.value;
@@ -11,7 +14,8 @@ Node* Num(Token token){
 }
 
 Node* BinOp(Token token, Node* left, Node* right){
-  Node* toReturn = (Node*)malloc(sizeof(Node));
+  free(toReturn);
+  toReturn = malloc(sizeof(Node));
   toReturn->class = BINOP;
   toReturn->token = token;
   toReturn->op.left = left;
@@ -20,7 +24,8 @@ Node* BinOp(Token token, Node* left, Node* right){
 }
 
 Node* UnOp(Token op, Node* expr){
-  Node* toReturn = (Node*)malloc(sizeof(Node));
+  free(toReturn);
+  toReturn = malloc(sizeof(Node));
   toReturn->class = UNOP;
   toReturn->token = op;
   toReturn->expr = expr;
@@ -28,13 +33,15 @@ Node* UnOp(Token op, Node* expr){
 }
 
 Node* NoOp(){
-  Node* toReturn = (Node*)malloc(sizeof(Node));
+  free(toReturn);
+  toReturn = malloc(sizeof(Node));
   toReturn->class = NOOP;
   return toReturn;
 }
 
 Node* AssOp(Token token, Node* left, Node* right){
-  Node* toReturn = (Node*)malloc(sizeof(Node));
+  free(toReturn);
+  toReturn = malloc(sizeof(Node));
   toReturn->class = ASSOP;
   toReturn->token = token;
   toReturn->op.left = left;
@@ -43,17 +50,20 @@ Node* AssOp(Token token, Node* left, Node* right){
 }
 
 Node* Var(Token token){
-  Node* toReturn = (Node*)malloc(sizeof(Node));
+  free(toReturn);
+  toReturn = malloc(sizeof(Node));
   toReturn->class = VAR;
   toReturn->token = token;
   toReturn->id = token.id;
+  return toReturn;
 }
 
-Node* Compound(Statement_Block children){
-  Node* root = (Node*) malloc(sizeof(Node));
-  memcpy(root->children.members, children.members, sizeof(children));
-  root->class = COMPOUND;
-  return root;
+Node* Compound(Node* children, int size){
+  free(toReturn);
+  toReturn =  malloc(sizeof(Node));
+  memcpy(toReturn->children, children, sizeof(Node)*size);
+  toReturn->class = COMPOUND;
+  return toReturn;
 }
 
 void consume(Type type){
@@ -130,25 +140,27 @@ Node* program(){
 
 Node* compound_statement(){
   consume(BEGIN);
-  Statement_Block nodes = statement_list();
-  Node* node = Compound(nodes);
+  Node* nodes = statement_list();
+  Node* node = Compound(nodes, sizeof(nodes->children)/sizeof(nodes->children[0]));
   consume(END);
   return node;
 }
 
-Statement_Block statement_list(){
-  Statement_Block statements;
-  statements.size = 1;
-  statements.members[0] = statement();
+Node* statement_list(){
+  free(statements);
+  statements = malloc(sizeof(Node));
+  int size = 1;
+  statements->children[0] = statement();
   while(current_token.type == SEMI){
     consume(SEMI);
-    statements.members[statements.size] = statement();
-    statements.size++;
+    memcpy(statements->children, realloc(statements->children, size * sizeof(Node*)), size * sizeof(Node*));
+    statements->children[size] = statement();
+    size++;
   }
   if(current_token.type == ID){
     printf("Syntax Error in parsing statement_list\n");
   }
-
+  printf("returning statement block\n");
   return statements;
 }
 
@@ -156,7 +168,7 @@ Node* statement(){
   if(current_token.type == BEGIN){
     return compound_statement();
   }
-  else if(current_token.type == ASSIGN){
+  else if(current_token.type == ID){
     return assignment_statement();
   }
   else{
